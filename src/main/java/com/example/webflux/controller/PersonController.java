@@ -26,7 +26,7 @@ public class PersonController {
 	@Autowired
 	ThreadPoolTaskExecutor taskExecutor;
 	@Autowired
-	WebClient client;
+	WebClient demoWebClient;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PersonController.class);
 
@@ -74,7 +74,7 @@ public class PersonController {
 	public Flux<Person> findPersonsIntegration(@PathVariable("param") String param) {
 		return Flux.fromStream(this::prepareStreamPart1).log()
 			.mergeWith(
-				client.get().uri("/slow/" + param)
+				demoWebClient.get().uri("/slow/" + param)
 					.retrieve()
 					.bodyToFlux(Person.class)
 					.log()
@@ -85,7 +85,7 @@ public class PersonController {
 	public Flux<Person> findPersonsIntegrationInDifferentPool(@PathVariable("param") String param) {
 		return Flux.fromStream(this::prepareStreamPart1).log()
 			.mergeWith(
-				client.get().uri("/slow/" + param)
+				demoWebClient.get().uri("/slow/" + param)
 					.retrieve()
 					.bodyToFlux(Person.class)
 					.log()
