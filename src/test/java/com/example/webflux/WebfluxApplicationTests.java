@@ -2,11 +2,12 @@ package com.example.webflux;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -17,11 +18,62 @@ import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 
+import net.jodah.concurrentunit.Waiter;
+
+import com.example.webflux.entity.Person;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class WebfluxApplicationTests {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(WebfluxApplicationTests.class);
+	final WebClient client = WebClient.builder().baseUrl("http://localhost:8080").build();
+
+	@Test
+	public void testFindPersonsJson() throws TimeoutException, InterruptedException {
+		final Waiter waiter = new Waiter();
+		Flux<Person> persons = client.get().uri("/persons/json").retrieve().bodyToFlux(Person.class);
+		persons.subscribe(person -> {
+			waiter.assertNotNull(person);
+			LOGGER.info("Client subscribes: {}", person);
+			waiter.resume();
+		});
+		waiter.await(3000, 9);
+	}
+
+	@Test
+	public void testFindPersonsStream() throws TimeoutException, InterruptedException {
+		final Waiter waiter = new Waiter();
+		Flux<Person> persons = client.get().uri("/persons/stream").retrieve().bodyToFlux(Person.class);
+		persons.subscribe(person -> {
+			LOGGER.info("Client subscribes: {}", person);
+			waiter.assertNotNull(person);
+			waiter.resume();
+		});
+		waiter.await(3000, 9);
+	}
+
+	@Test
+	public void testFindPersonsStreamBackPressure() throws TimeoutException, InterruptedException {
+		final Waiter waiter = new Waiter();
+		Flux<Person> persons = client.get().uri("/persons/stream/back-pressure").retrieve().bodyToFlux(Person.class);
+		persons.map(this::doSomeSlowWork).subscribe(person -> {
+			waiter.assertNotNull(person);
+			LOGGER.info("Client subscribes: {}", person);
+			waiter.resume();
+		});
+		waiter.await(3000, 9);
+	}
+
+	private Person doSomeSlowWork(Person person) {
+		try {
+			Thread.sleep(90);
+		} catch (InterruptedException e) {
+		}
+		return person;
+	}
 
 	@Test
 	void contextLoads() {
@@ -75,8 +127,7 @@ class WebfluxApplicationTests {
 			.subscribe(System.out::println);
 		Flux.just("a", "b")
 			.zipWith(Flux.just("c", "d"), (s1, s2) -> String.format("%s-%s", s1, s2))
-			.subscribe(System.out::println);}
-
-
+			.subscribe(System.out::println);
+	}
 
 }

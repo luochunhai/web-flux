@@ -1,4 +1,4 @@
-package com.example.webflux.config;
+package com.example.webflux.route;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
