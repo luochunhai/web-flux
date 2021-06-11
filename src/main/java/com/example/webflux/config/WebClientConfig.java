@@ -32,6 +32,19 @@ public class WebClientConfig {
 	private int idleTimeoutSec;
 	private int maxPoolSize;
 
+	@Bean("service-a-web-client")
+	public WebClient serviceAWebClient() {
+		HttpClient httpClient = HttpClient.create().tcpConfiguration(tcpClient ->
+			tcpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)
+				.doOnConnected(connection -> connection.addHandlerLast(new ReadTimeoutHandler(1000, TimeUnit.MILLISECONDS)))
+		);
+
+		return WebClient.builder()
+			.baseUrl("http://your-base-url.com")
+			.clientConnector(new ReactorClientHttpConnector(httpClient))
+			.build();
+	}
+
 	@Bean("httpClient")
 	public HttpClient httpClient() {
 		return createHttpClient("webClient-pool", defaultReadTimeoutSec);
