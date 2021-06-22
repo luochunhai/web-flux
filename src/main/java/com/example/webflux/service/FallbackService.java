@@ -1,10 +1,13 @@
 package com.example.webflux.service;
 
-import com.nickolasfisher.webflux.model.WelcomeMessage;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import com.example.webflux.model.WelcomeMessage;
+
 import reactor.core.publisher.Mono;
 
 @Service

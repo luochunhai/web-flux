@@ -1,8 +1,6 @@
 package com.example.webflux.service;
 
-import com.nickolasfisher.webflux.model.FirstCallDTO;
-import com.nickolasfisher.webflux.model.MergedCallsDTO;
-import com.nickolasfisher.webflux.model.SecondCallDTO;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -10,6 +8,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.util.function.Function;
+
+import com.example.webflux.model.FirstCallDTO;
+import com.example.webflux.model.MergedCallsDTO;
+import com.example.webflux.model.SecondCallDTO;
 
 @Service
 public class CombiningCallsService {
